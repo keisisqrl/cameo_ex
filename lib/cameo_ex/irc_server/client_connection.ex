@@ -1,4 +1,7 @@
 defmodule CameoEx.IrcServer.ClientConnection do
+  @moduledoc """
+  Handles a connection from an IRC client including modeling state.
+  """
   use GenServer
   alias CameoEx.IrcServer.IrcMessage
   require IEx
