@@ -1,4 +1,8 @@
 defmodule CameoEx.IrcServer.IrcMessage do
+  @moduledoc """
+  Utility module for dealing with IRC messages
+  """
+
   @sep " "
   @pre ":"
   @lf "\r\n"
@@ -11,6 +15,10 @@ defmodule CameoEx.IrcServer.IrcMessage do
     params: nil | [binary]
   }
 
+  @doc """
+  Get prefix from IRC message with prefix
+  """
+  @spec get_prefix(binary()) :: {binary(), binary()}
   def get_prefix(<<":", _::binary()>> = msg) do
     msg |> String.split(" ", parts: 2) |> List.to_tuple
   end

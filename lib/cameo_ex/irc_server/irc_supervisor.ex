@@ -1,4 +1,9 @@
 defmodule CameoEx.IrcServer.IrcSupervisor do
+  @moduledoc """
+  Supervise an IRC Server instance
+
+  Includes listen function, which lives in a Task.
+  """
   use Supervisor
   alias CameoEx.IrcServer.ClientConnection
 
@@ -11,7 +16,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   def init(:ok) do
     listen_port = Application.get_env(:cameo_ex,:irc_port)
     children = [
-      worker(Task, [__MODULE__,:listen,[listen_port]], restart: :temporary)
+      worker(Task, [__MODULE__,:listen,[listen_port]], restart: :transient)
     ]
 
     supervise(children, strategy: :one_for_one)
