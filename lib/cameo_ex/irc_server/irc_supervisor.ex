@@ -6,6 +6,8 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  @spec init(:ok) :: {:ok, {:supervisor.sup_flags, [Supervisor.Spec.spec]}} |
+                     :ignore
   def init(:ok) do
     listen_port = Application.get_env(:cameo_ex,:irc_port)
     children = [
@@ -15,6 +17,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
     supervise(children, strategy: :one_for_one)
   end
 
+  @spec listen(integer()) :: no_return()
   def listen(port) do
     {:ok, socket} = :gen_tcp.listen(port, packet: :line, mode: :binary)
     accept(socket)

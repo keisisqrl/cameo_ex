@@ -45,6 +45,8 @@ defmodule CameoEx.IrcServer.ClientConnection do
     handle_info({:tcp, socket, rem}, state, prefix)
   end
 
+  @spec handle_info({:tcp,:inet.socket,binary()},__MODULE__.t,binary()|nil) ::
+          {:noreply, __MODULE__.t}
   def handle_info({:tcp, socket, << "NICK ", rest::binary >> = msg},
                   state, prefix \\ nil) do
     case String.split(rest) do

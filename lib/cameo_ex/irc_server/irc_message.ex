@@ -12,7 +12,7 @@ defmodule CameoEx.IrcServer.IrcMessage do
   }
 
   def get_prefix(<<":", _::binary()>> = msg) do
-    String.split(msg, " ", parts: 2) |> List.to_tuple
+    msg |> String.split(" ", parts: 2) |> List.to_tuple
   end
 
   def nick_match, do: ~r/[[:alpha:][:punct:]][[:alnum:][:punct:]]/
