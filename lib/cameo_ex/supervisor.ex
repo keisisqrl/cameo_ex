@@ -11,6 +11,7 @@ defmodule CameoEx.Supervisor do
   @spec init(:ok) :: no_return()
   def init(:ok) do
     children = [
+      worker(GenEvent, [[{:name, :message_router}]]),
       supervisor(CameoEx.IrcServer.IrcSupervisor, [])
     ]
 
