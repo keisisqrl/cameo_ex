@@ -66,15 +66,15 @@ defmodule CameoEx.IrcServer.ClientConnection do
     end
   end
 
-  @spec handle_message(IrcMessage.t,:gen_tcp.socket,__MODULE__.t) ::
+  @spec handle_message(IrcMessage.t, :gen_tcp.socket, __MODULE__.t) ::
           __MODULE__.t
   def handle_message(%IrcMessage{command: "NICK"} = msg, socket, state) do
-  [nick|_] = msg.params
+  [nick| _] = msg.params
   if state.registered do
-    reply = IrcMessage.build_client_msg(state,"NICK",[nick])
+    reply = IrcMessage.build_client_msg(state, "NICK", [nick])
     :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
   end
-  %__MODULE__{state | nick: nick}
+  %__MODULE__{state| nick: nick}
   end
 
   def handle_message(%IrcMessage{command: "USER"} = msg, socket, state) do
@@ -82,20 +82,20 @@ defmodule CameoEx.IrcServer.ClientConnection do
       state.registered ->
         reply = IrcMessage.build_server_msg("462",
                   ["Unauthorized command (already registered)"])
-        :gen_tcp.send(socket,IrcMessage.to_iolist(reply))
+        :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
         state
       length(msg.params) < 4 ->
         reply = IrcMessage.build_server_msg("461",
                   ["USER", "Not enough parameters"])
-        :gen_tcp.send(socket,IrcMessage.to_iolist(reply))
+        :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
         state
       true ->
-        [user, _, _, name|_] = msg.params
+        [user, _, _, name| _] = msg.params
         %__MODULE__{state| user: user, name: name, registered: true}
       end
   end
 
-  def handle_message(msg,socket,state) do
+  def handle_message(msg, socket, state) do
     reply = IrcMessage.build_server_msg("421", [msg.command, "Unknown command"])
     :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
     state
