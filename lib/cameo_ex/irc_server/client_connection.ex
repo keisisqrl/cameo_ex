@@ -54,8 +54,16 @@ defmodule CameoEx.IrcServer.ClientConnection do
 
   # Handle IRC message
   def handle_info({:tcp, socket, msg}, state) do
-    message = IrcMessage.parse_message(String.trim(msg))
-    {:noreply, handle_message(message, socket, state)}
+    try do
+      IrcMessage.parse_message(String.trim(msg))
+    rescue
+      ArgumentError ->
+        handle_message(%IrcMessage{command: "invalid"}, socket, state)
+        {:noreply, state}
+    else
+      message ->
+        {:noreply, handle_message(message, socket, state)}
+    end
   end
 
   @spec handle_message(IrcMessage.t,:gen_tcp.socket,__MODULE__.t) ::
@@ -87,4 +95,9 @@ defmodule CameoEx.IrcServer.ClientConnection do
       end
   end
 
+  def handle_message(msg,socket,state) do
+    reply = IrcMessage.build_server_msg("421", [msg.command, "Unknown command"])
+    :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
+    state
+  end
 end
