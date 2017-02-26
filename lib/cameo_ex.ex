@@ -14,6 +14,7 @@ defmodule CameoEx do
   """
   use Application
 
+  @spec start(term(),term())  :: {:ok, pid}
   def start(_type, _args) do
     CameoEx.Supervisor.start_link
   end
