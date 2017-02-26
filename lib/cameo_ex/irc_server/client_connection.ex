@@ -24,6 +24,8 @@ defmodule CameoEx.IrcServer.ClientConnection do
     host: binary()
   }
 
+  @type state :: __MODULE__.t
+
   @spec start_link(:gen_tcp.socket()) :: {:ok, pid()}
   def start_link(socket) do
     GenServer.start_link(__MODULE__, socket)
@@ -45,24 +47,25 @@ defmodule CameoEx.IrcServer.ClientConnection do
   @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t) ::
           {:noreply, __MODULE__.t}
   # Handle IRC message with prefix
-  def handle_info({:tcp, socket, <<":", _::binary>> = msg}, state) do
-    {prefix, rem} = IrcMessage.get_prefix(msg)
-    handle_info({:tcp, socket, rem}, state, prefix)
+  def handle_info({:tcp, socket, msg}, state) do
+    message = IrcMessage.parse_message(msg)
+    {:noreply, handle_message(message, socket, state)}
   end
 
-  @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t,
-                    binary() | nil) ::
-          {:noreply, __MODULE__.t}
+  @spec handle_message(IrcMessage.t,:gen_tcp.socket,__MODULE__.t) ::
+          __MODULE__.t
+  def handle_message(%IrcMessage{command: "NICK"} = msg, socket, state) do
+  [nick|_] = msg.params
+  if state.registered do
+    reply = IrcMessage.build_client_msg(state,"NICK",[nick])
+    :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
+  end
+  %__MODULE__{state | nick: nick}
+  end
 
-  # Begin IRC message handlers, post stripping prefix
-  def handle_info({:tcp, socket, <<"NICK ", rest::binary>> = _msg},
-                  state, _prefix \\ nil) do
-    [nick | _] = String.split(rest)
-    if state.registered do
-      reply = IrcMessage.build_client_msg(state,"NICK",[nick])
-      :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
-    end
-    {:noreply, %__MODULE__{state | nick: nick}}
+  def handle_message(%IrcMessage{command: "USER"} = msg, socket, state) do
+    #[user, _, _, name|_] = msg.params
+    state
   end
 
 end

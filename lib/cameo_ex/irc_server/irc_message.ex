@@ -8,20 +8,44 @@ defmodule CameoEx.IrcServer.IrcMessage do
   @pre ":"
   @lf "\r\n"
 
-  defstruct prefix: elem(:inet.gethostname(),1), command: nil, params: nil
+  defstruct ~w(prefix command params)a
 
   @type t :: %__MODULE__{
-    prefix: binary | charlist,
+    prefix: binary | charlist | nil,
     command: binary,
     params: [binary]
   }
 
+  @spec parse_message(binary()) :: __MODULE__.t
+  def parse_message(<<":", _::binary()>> = msg) do
+    [prefix, rem] = get_prefix(msg)
+    %__MODULE__{prefix: prefix} |> Map.merge(parse_message(rem))
+  end
+
+  def parse_message(msg) do
+    [cmd, rem] = msg |> String.split(" ", parts: 2)
+    %__MODULE__{command: cmd} |> Map.merge(parse_params(rem))
+  end
+
+  @spec parse_params(binary()) :: __MODULE__.t
+  def parse_params(msg) do
+    if String.contains?(msg, " :") do
+      [middle, trailing] = String.split(msg, " :", parts: 2)
+      mid_params = String.split(middle)
+      params = [mid_params, trailing] |> List.flatten
+      %__MODULE__{params: params}
+    else
+      params = String.split(msg)
+      %__MODULE__{params: params}
+    end
+  end
+
   @doc """
   Get prefix from IRC message with prefix
   """
-  @spec get_prefix(binary()) :: {binary(), binary()}
+  @spec get_prefix(binary()) :: list
   def get_prefix(<<":", _::binary()>> = msg) do
-    msg |> String.split(" ", parts: 2) |> List.to_tuple
+    msg |> String.split(" ", parts: 2)
   end
 
   # Dialyzer doesn't like ClientConnection.t in this typespec, not sure why.
