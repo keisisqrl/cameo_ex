@@ -19,24 +19,24 @@ defmodule CameoEx.IrcServer.IrcMessage do
   @spec parse_message(binary()) :: __MODULE__.t
   def parse_message(<<":", _::binary()>> = msg) do
     [prefix, rem] = get_prefix(msg)
-    %__MODULE__{prefix: prefix} |> Map.merge(parse_message(rem))
+    %__MODULE__{prefix: prefix} |> struct(Map.from_struct(parse_message(rem)))
   end
 
   def parse_message(msg) do
     [cmd, rem] = msg |> String.split(" ", parts: 2)
-    %__MODULE__{command: cmd} |> Map.merge(parse_params(rem))
+    %__MODULE__{command: cmd} |> struct(parse_params(rem))
   end
 
-  @spec parse_params(binary()) :: __MODULE__.t
+  @spec parse_params(binary()) :: %{params: [binary()]}
   def parse_params(msg) do
     if String.contains?(msg, " :") do
       [middle, trailing] = String.split(msg, " :", parts: 2)
       mid_params = String.split(middle)
       params = [mid_params, trailing] |> List.flatten
-      %__MODULE__{params: params}
+      %{params: params}
     else
       params = String.split(msg)
-      %__MODULE__{params: params}
+      %{params: params}
     end
   end
 
@@ -62,11 +62,18 @@ defmodule CameoEx.IrcServer.IrcMessage do
     ":#{client.nick}!#{client.prefix}@#{client.host}"
   end
 
+  @spec build_server_msg(binary(), [binary()]) :: __MODULE__.t
+  def build_server_msg(command,params) do
+    %__MODULE__{prefix: elem(:inet.gethostname(),1),
+                command: command,
+                params: params}
+  end
+
   def nick_match, do: ~r/[[:alpha:][:punct:]][[:alnum:][:punct:]]/
 
   @spec to_iolist(__MODULE__.t) :: iolist()
   def to_iolist(msg) when is_map(msg) do
-    [":", msg.prefix, " ", msg.command, " ", to_iolist(msg.params)]
+    [":", msg.prefix, " ", msg.command, " ", to_iolist(msg.params), @lf]
   end
 
   @spec to_iolist([binary()]) :: iolist()

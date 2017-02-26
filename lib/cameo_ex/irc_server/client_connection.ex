@@ -46,9 +46,15 @@ defmodule CameoEx.IrcServer.ClientConnection do
 
   @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t) ::
           {:noreply, __MODULE__.t}
-  # Handle IRC message with prefix
+
+  # Handle empty line
+  def handle_info({:tcp,_,"\n"}, state), do: {:noreply, state}
+
+  def handle_info({:tcp,_,"\r\n"}, state), do: {:noreply, state}
+
+  # Handle IRC message
   def handle_info({:tcp, socket, msg}, state) do
-    message = IrcMessage.parse_message(msg)
+    message = IrcMessage.parse_message(String.trim(msg))
     {:noreply, handle_message(message, socket, state)}
   end
 
@@ -64,8 +70,21 @@ defmodule CameoEx.IrcServer.ClientConnection do
   end
 
   def handle_message(%IrcMessage{command: "USER"} = msg, socket, state) do
-    #[user, _, _, name|_] = msg.params
-    state
+    cond do
+      state.registered ->
+        reply = IrcMessage.build_server_msg("462",
+                  ["Unauthorized command (already registered)"])
+        :gen_tcp.send(socket,IrcMessage.to_iolist(reply))
+        state
+      length(msg.params) < 4 ->
+        reply = IrcMessage.build_server_msg("461",
+                  ["USER", "Not enough parameters"])
+        :gen_tcp.send(socket,IrcMessage.to_iolist(reply))
+        state
+      true ->
+        [user, _, _, name|_] = msg.params
+        %__MODULE__{state| user: user, name: name, registered: true}
+      end
   end
 
 end
