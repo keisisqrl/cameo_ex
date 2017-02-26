@@ -34,27 +34,28 @@ defmodule CameoEx.IrcServer.ClientConnection do
 
   # Begin callbacks
 
-  @spec handle_info(msg :: {:tcp_closed, any()} | {:tcp,
-                                                             :inet.socket,
-                                                             binary()},
-                    __MODULE__.t) ::
-                    {:noreply, __MODULE__.t} | {:stop, :normal, :state}
+  @spec handle_info({:tcp_closed, term()}, __MODULE__.t) ::
+          {:stop, :normal, __MODULE__.t}
   # Handle closure
   def handle_info({:tcp_closed, _}, state), do: {:stop, :normal, state}
 
+  @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t) ::
+          {:noreply, __MODULE__.t}
   # Handle IRC message
-  def handle_info({:tcp, socket, << ":", _::binary >> = msg}, state) do
-    {prefix,rem} = IrcMessage.get_prefix(msg)
+  def handle_info({:tcp, socket, <<":", _::binary>> = msg}, state) do
+    {prefix, rem} = IrcMessage.get_prefix(msg)
     handle_info({:tcp, socket, rem}, state, prefix)
   end
 
-  @spec handle_info({:tcp,:inet.socket,binary()},__MODULE__.t,binary()|nil) ::
+  @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t,
+                    binary() | nil) ::
           {:noreply, __MODULE__.t}
-  def handle_info({:tcp, socket, << "NICK ", rest::binary >> = msg},
-                  state, prefix \\ nil) do
+  def handle_info({:tcp, socket, <<"NICK ", rest::binary>> = _msg},
+                  state, _prefix \\ nil) do
     case String.split(rest) do
-      [nick|_] ->
-        {:noreply, %__MODULE__{state| nick: nick}}
+      [nick | _] ->
+
+        {:noreply, %__MODULE__{state | nick: nick}}
       _ ->
         {:noreply, state}
     end
