@@ -63,8 +63,8 @@ defmodule CameoEx.IrcServer.IrcMessage do
   end
 
   @spec build_server_msg(binary(), [binary()]) :: __MODULE__.t
-  def build_server_msg(command,params) do
-    %__MODULE__{prefix: elem(:inet.gethostname(),1),
+  def build_server_msg(command, params) do
+    %__MODULE__{prefix: elem(:inet.gethostname(), 1),
                 command: command,
                 params: params}
   end
