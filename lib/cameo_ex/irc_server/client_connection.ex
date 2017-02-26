@@ -61,5 +61,4 @@ defmodule CameoEx.IrcServer.ClientConnection do
     end
   end
 
-
 end
