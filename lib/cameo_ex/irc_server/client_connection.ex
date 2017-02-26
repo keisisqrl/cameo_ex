@@ -6,20 +6,22 @@ defmodule CameoEx.IrcServer.ClientConnection do
   alias CameoEx.IrcServer.IrcMessage
   require IEx
 
-  defstruct [:socket,
-             :status,
-             :nick,
-             :pass,
-             :user,
-             :name]
+  defstruct socket: nil,
+            registered: false,
+            nick: "",
+            pass: "",
+            user: "",
+            name: "",
+            host: ""
 
   @type t :: %__MODULE__{
     socket: :inet.socket,
-    status: atom(),
-    nick: nil|binary(),
-    pass: nil|binary(),
-    user: nil|binary(),
-    name: nil|binary()
+    registered: boolean,
+    nick: binary(),
+    pass: binary(),
+    user: binary(),
+    name: binary(),
+    host: binary()
   }
 
   @spec start_link(:gen_tcp.socket()) :: {:ok, pid()}
@@ -29,7 +31,8 @@ defmodule CameoEx.IrcServer.ClientConnection do
 
   @spec init(:gen_tcp.socket()) :: {:ok, %__MODULE__{}}
   def init(socket) do
-    {:ok, %__MODULE__{socket: socket, status: :connected}}
+    {:ok, {peer, _}} = :inet.peername(socket)
+    {:ok, %__MODULE__{socket: socket, host: :inet.ntoa(peer)}}
   end
 
   # Begin callbacks
@@ -41,7 +44,7 @@ defmodule CameoEx.IrcServer.ClientConnection do
 
   @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t) ::
           {:noreply, __MODULE__.t}
-  # Handle IRC message
+  # Handle IRC message with prefix
   def handle_info({:tcp, socket, <<":", _::binary>> = msg}, state) do
     {prefix, rem} = IrcMessage.get_prefix(msg)
     handle_info({:tcp, socket, rem}, state, prefix)
@@ -50,15 +53,16 @@ defmodule CameoEx.IrcServer.ClientConnection do
   @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t,
                     binary() | nil) ::
           {:noreply, __MODULE__.t}
+
+  # Begin IRC message handlers, post stripping prefix
   def handle_info({:tcp, socket, <<"NICK ", rest::binary>> = _msg},
                   state, _prefix \\ nil) do
-    case String.split(rest) do
-      [nick | _] ->
-
-        {:noreply, %__MODULE__{state | nick: nick}}
-      _ ->
-        {:noreply, state}
+    [nick | _] = String.split(rest)
+    if state.registered do
+      reply = IrcMessage.build_client_msg(state,"NICK",[nick])
+      :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
     end
+    {:noreply, %__MODULE__{state | nick: nick}}
   end
 
 end
