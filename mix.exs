@@ -33,7 +33,8 @@ defmodule CameoEx.Mixfile do
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:credo, "~> 0.5", only: [:dev, :test]},
       {:discord_ex, "~> 1.1.8"},
-      {:fsm, "~> 0.3.0"}
+      {:fsm, "~> 0.3.0"},
+      {:oauth2, "~> 0.9.0"}
     ]
   end
 end

@@ -15,6 +15,7 @@
   "kcl": {:hex, :kcl, "0.6.6", "156de704ac2e118d9617a56a4703831cad57a1f70cbf3ecbab4cd2dd2f395037", [:mix], [{:curve25519, "~> 0.1", [hex: :curve25519, optional: false]}, {:ed25519, "~> 0.2", [hex: :ed25519, optional: false]}, {:poly1305, "~> 0.4", [hex: :poly1305, optional: false]}, {:salsa20, "~> 0.3", [hex: :salsa20, optional: false]}]},
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], []},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], []},
+  "oauth2": {:hex, :oauth2, "0.9.0", "74f1b7a57aa76dadf17b177d8c9bd1552874df392fe6fe541d0ec9e79d130019", [:mix], [{:hackney, "~> 1.6", [hex: :hackney, optional: false]}]},
   "poison": {:hex, :poison, "2.2.0", "4763b69a8a77bd77d26f477d196428b741261a761257ff1cf92753a0d4d24a63", [:mix], []},
   "poly1305": {:hex, :poly1305, "0.4.5", "239d19597af369e2b570aed7f2a05e1a999a0a372774b28bcf387f47bd7958d4", [:mix], [{:chacha20, "~> 0.3", [hex: :chacha20, optional: false]}, {:equivalex, "~> 0.1", [hex: :equivalex, optional: false]}]},
   "porcelain": {:hex, :porcelain, "2.0.3", "2d77b17d1f21fed875b8c5ecba72a01533db2013bd2e5e62c6d286c029150fdc", [:mix], []},
