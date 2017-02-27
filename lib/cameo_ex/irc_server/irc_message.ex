@@ -111,8 +111,6 @@ defmodule CameoEx.IrcServer.IrcMessage do
                 params: params}
   end
 
-  def nick_match, do: ~r/[[:alpha:][:punct:]][[:alnum:][:punct:]]/
-
   @spec to_iolist(__MODULE__.t) :: iolist()
   def to_iolist(msg) when is_map(msg) do
     [":", msg.prefix, " ", msg.command, " ", to_iolist(msg.params), @lf]
