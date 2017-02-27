@@ -56,7 +56,7 @@ defmodule CameoEx.IrcServer.IrcMessage do
   end
 
   @spec client_prefix(ClientConnection.t) :: binary()
-  defp client_prefix(client) do
+  def client_prefix(client) do
     ":#{client.nick}!#{client.user}@#{client.host}"
   end
 
