@@ -60,8 +60,13 @@ defmodule CameoEx.IrcServer.ClientConnection do
 
   # Handle IRC message
   def handle_info({:tcp, socket, msg}, state) do
-    message = IrcMessage.parse_message(String.trim(msg))
-    {:noreply, handle_message(message, socket, state)}
+    case IrcMessage.parse_message(String.trim(msg)) do
+      %IrcMessage{command: "QUIT"} ->
+        Logger.info("QUIT from #{IrcMessage.client_prefix(state)}")
+        {:stop, :normal, state}
+      message ->
+        {:noreply, handle_message(message, socket, state)}
+    end
   end
 
   @spec handle_message(IrcMessage.t, :gen_tcp.socket, __MODULE__.t) ::
@@ -96,12 +101,6 @@ defmodule CameoEx.IrcServer.ClientConnection do
   def handle_message(%IrcMessage{command: "PASS"} = msg, socket, state) do
     [pass| _] = msg.params
     %__MODULE__{state| pass: pass}
-  end
-
-  def handle_message(%IrcMessage{command: "QUIT"} = msg, socket, state) do
-    :gen_tcp.close(socket)
-    Logger.info("QUIT from #{IrcMessage.client_prefix(state)}")
-    state
   end
 
   def handle_message(msg, socket, state) do
