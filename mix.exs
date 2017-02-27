@@ -7,7 +7,10 @@ defmodule CameoEx.Mixfile do
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     test_coverage: [tool: ExCoveralls],
+     preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test,
+                         "coveralls.post": :test, "coveralls.html": :test]]
   end
 
   # Configuration for the OTP application
@@ -33,6 +36,7 @@ defmodule CameoEx.Mixfile do
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:credo, "~> 0.5", only: [:dev, :test], runtime: false},
       {:mock, "~> 0.2.1", only: [:test]},
+      {:excoveralls, "~> 0.6.2", only: [:test]},
       {:discord_ex, "~> 1.1.8"},
       {:oauth2, "~> 0.9.0"}
     ]
