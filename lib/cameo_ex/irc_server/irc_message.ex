@@ -48,7 +48,6 @@ defmodule CameoEx.IrcServer.IrcMessage do
     msg |> String.split(" ", parts: 2)
   end
 
-  # Dialyzer doesn't like ClientConnection.t in this typespec, not sure why.
   @spec build_client_msg(ClientConnection.t,
                          binary(), [binary()]) :: __MODULE__.t
   def build_client_msg(%{registered: true} = client, command, params) do
@@ -56,10 +55,9 @@ defmodule CameoEx.IrcServer.IrcMessage do
                       params: params}
   end
 
-  # Or this one. Tough, dialyzer.
   @spec client_prefix(ClientConnection.t) :: binary()
   defp client_prefix(client) do
-    ":#{client.nick}!#{client.prefix}@#{client.host}"
+    ":#{client.nick}!#{client.user}@#{client.host}"
   end
 
   @spec build_server_msg(binary(), [binary()]) :: __MODULE__.t
