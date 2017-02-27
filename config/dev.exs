@@ -1,4 +1,4 @@
-use Mix.config
+use Mix.Config
 
-config :logger, 
+config :logger,
   level: :debug

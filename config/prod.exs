@@ -1,5 +1,5 @@
-use Mix.config
+use Mix.Config
 
-config :logger, 
+config :logger,
   :compile_time_purge_level :info,
   :level :error
