@@ -63,6 +63,7 @@ defmodule CameoEx.IrcServer.ClientConnection do
     case IrcMessage.parse_message(String.trim(msg)) do
       %IrcMessage{command: "QUIT"} ->
         Logger.info("QUIT from #{IrcMessage.client_prefix(state)}")
+        :gen_tcp.close(socket)
         {:stop, :normal, state}
       message ->
         {:noreply, handle_message(message, socket, state)}
