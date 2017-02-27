@@ -69,6 +69,9 @@ defmodule CameoEx.IrcServer.ClientConnection do
     end
   end
 
+  @doc """
+  Handles pre-parsed IrcMessage object.
+  """
   @spec handle_message(IrcMessage.t, :gen_tcp.socket, __MODULE__.t) ::
           __MODULE__.t
   def handle_message(%IrcMessage{command: "NICK"} = msg, socket, state) do
