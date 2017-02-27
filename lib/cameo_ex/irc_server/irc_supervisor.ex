@@ -6,7 +6,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   """
   use Supervisor
   alias CameoEx.IrcServer.ClientConnection
-  require Logger 
+  require Logger
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -34,7 +34,9 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   defp accept(socket) do
     {:ok, conn} = :gen_tcp.accept(socket)
     {:ok, child} = Supervisor.start_child(__MODULE__,
-                                          worker(ClientConnection, [conn]))
+                                worker(ClientConnection, [conn],
+                                id: {ClientConnection, :erlang.make_ref()},
+                                restart: :temporary))
     :ok = :gen_tcp.controlling_process(conn, child)
     accept(socket)
   end
