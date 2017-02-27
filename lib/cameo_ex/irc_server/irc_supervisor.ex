@@ -5,7 +5,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   Includes listen function, which lives in a Task.
   """
   use Supervisor
-  alias CameoEx.IrcServer.ClientConnection
+  alias CameoEx.IrcServer.ConnectionSupervisor
   require Logger
 
   def start_link do
@@ -17,7 +17,8 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   def init(:ok) do
     listen_port = Application.get_env(:cameo_ex, :irc_port)
     children = [
-      worker(Task, [__MODULE__, :listen, [listen_port]], restart: :transient)
+      worker(Task, [__MODULE__, :listen, [listen_port]], restart: :transient),
+      supervisor(ConnectionSupervisor, [])
     ]
 
     supervise(children, strategy: :one_for_one)
@@ -33,10 +34,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   @spec accept(:gen_tcp.socket()) :: no_return()
   defp accept(socket) do
     {:ok, conn} = :gen_tcp.accept(socket)
-    {:ok, child} = Supervisor.start_child(__MODULE__,
-                                worker(ClientConnection, [conn],
-                                id: {ClientConnection, :erlang.make_ref()},
-                                restart: :temporary))
+    {:ok, child} = Supervisor.start_child(ConnectionSupervisor,[conn])
     :ok = :gen_tcp.controlling_process(conn, child)
     accept(socket)
   end
