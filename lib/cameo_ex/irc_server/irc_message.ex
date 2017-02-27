@@ -10,8 +10,10 @@ defmodule CameoEx.IrcServer.IrcMessage do
 
   defstruct ~w(prefix command params)a
 
+  defp hostname, do: Application.get_env(:cameo_ex, :hostname)
+
   @type t :: %__MODULE__{
-    prefix: binary | charlist | nil,
+    prefix: binary | nil,
     command: binary,
     params: [binary] | []
   }
@@ -65,7 +67,7 @@ defmodule CameoEx.IrcServer.IrcMessage do
 
   @spec build_server_msg(binary(), [binary()]) :: __MODULE__.t
   def build_server_msg(command, params) do
-    %__MODULE__{prefix: elem(:inet.gethostname(), 1),
+    %__MODULE__{prefix: hostname(),
                 command: command,
                 params: params}
   end
