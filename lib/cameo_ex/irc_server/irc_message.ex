@@ -13,7 +13,7 @@ defmodule CameoEx.IrcServer.IrcMessage do
   @type t :: %__MODULE__{
     prefix: binary | charlist | nil,
     command: binary,
-    params: [binary]
+    params: [binary], []
   }
 
   @spec parse_message(binary()) :: __MODULE__.t
@@ -23,8 +23,10 @@ defmodule CameoEx.IrcServer.IrcMessage do
   end
 
   def parse_message(msg) do
-    [cmd, rem] = msg |> String.split(" ", parts: 2)
-    %__MODULE__{command: cmd} |> struct(parse_params(rem))
+    case msg |> String.split(" ", parts: 2) do
+      [cmd| []] -> %__MODULE__{command: cmd, params: []}
+      [cmd, rem] -> %__MODULE__{command: cmd} |> struct(parse_params(rem))
+    end
   end
 
   @spec parse_params(binary()) :: %{params: [binary()]}
