@@ -6,6 +6,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   """
   use Supervisor
   alias CameoEx.IrcServer.ClientConnection
+  require Logger 
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -25,6 +26,7 @@ defmodule CameoEx.IrcServer.IrcSupervisor do
   @spec listen(integer()) :: no_return()
   def listen(port) do
     {:ok, socket} = :gen_tcp.listen(port, packet: :line, mode: :binary)
+    Logger.info("Listening on port #{port} for IRC")
     accept(socket)
   end
 
