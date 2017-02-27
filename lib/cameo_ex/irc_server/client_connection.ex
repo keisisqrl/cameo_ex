@@ -5,6 +5,7 @@ defmodule CameoEx.IrcServer.ClientConnection do
   use GenServer
   alias CameoEx.IrcServer.IrcMessage
   require IEx
+  require Logger
 
   defstruct socket: nil,
             registered: false,
@@ -34,7 +35,9 @@ defmodule CameoEx.IrcServer.ClientConnection do
   @spec init(:gen_tcp.socket()) :: {:ok, %__MODULE__{}}
   def init(socket) do
     {:ok, {peer, _}} = :inet.peername(socket)
-    {:ok, %__MODULE__{socket: socket, host: :inet.ntoa(peer)}}
+    host = :inet.ntoa(peer)
+    Logger.info("New connection from #{host}")
+    {:ok, %__MODULE__{socket: socket, host: host}}
   end
 
   # Begin callbacks
@@ -42,7 +45,10 @@ defmodule CameoEx.IrcServer.ClientConnection do
   @spec handle_info({:tcp_closed, term()}, __MODULE__.t) ::
           {:stop, :normal, __MODULE__.t}
   # Handle closure
-  def handle_info({:tcp_closed, _}, state), do: {:stop, :normal, state}
+  def handle_info({:tcp_closed, _}, state) do
+    Logger.info("Lost connection: #{IrcMessage.client_prefix(state)}")
+    {:stop, :normal, state}
+  end
 
   @spec handle_info({:tcp, :inet.socket, binary()}, __MODULE__.t) ::
           {:noreply, __MODULE__.t}
