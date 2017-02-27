@@ -2,7 +2,7 @@
 
 *Cameo: a hybrid cultivar of "golden" apples*
 
-[![Build Status](https://travis-ci.org/keisisqrl/cameo_ex.svg?branch=master)](https://travis-ci.org/keisisqrl/cameo_ex)
+[![Build Status](https://travis-ci.org/keisisqrl/cameo_ex.svg?branch=master)](https://travis-ci.org/keisisqrl/cameo_ex) [![Coverage Status](https://coveralls.io/repos/github/keisisqrl/cameo_ex/badge.svg?branch=master)](https://coveralls.io/github/keisisqrl/cameo_ex?branch=master)
 
 IRC gateway for [Discord](https://discordapp.com/)
 
