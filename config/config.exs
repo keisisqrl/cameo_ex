@@ -21,7 +21,9 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
-config :cameo_ex, irc_port: 6667
+config :cameo_ex,
+  irc_port: String.to_integer(Map.get(System.get_env(),
+                                      "CAMEO_IRC_PORT", "6667"))
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
