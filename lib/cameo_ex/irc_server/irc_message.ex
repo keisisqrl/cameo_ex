@@ -55,9 +55,10 @@ defmodule CameoEx.IrcServer.IrcMessage do
                       params: params}
   end
 
+  # Kind of a misnomer - actually formats nick!user@host user format
   @spec client_prefix(ClientConnection.t) :: binary()
   def client_prefix(client) do
-    ":#{client.nick}!#{client.user}@#{client.host}"
+    "#{client.nick}!#{client.user}@#{client.host}"
   end
 
   @spec build_server_msg(binary(), [binary()]) :: __MODULE__.t
