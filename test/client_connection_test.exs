@@ -84,6 +84,17 @@ defmodule ClientConnectionTest do
     end
   end
 
+  describe "handle PASS:" do
+    setup :pass_tests
+    
+    test "success", context do
+      mock_tcp do
+        new_state = ClientConnection.handle_message(context.msg, nil, context.state)
+        assert new_state == %{context.state| pass: context.pass}
+      end
+    end
+  end
+
   defp nick_tests(_context) do
     [
       state: %ClientConnection{
@@ -111,6 +122,15 @@ defmodule ClientConnectionTest do
       },
       newuser: newuser,
       realname: realname
+    ]
+  end
+
+  defp pass_tests(_context) do
+    pass = "pass"
+    [
+      state: %ClientConnection{},
+      msg: %IrcMessage{command: "PASS", params: [pass]},
+      pass: pass
     ]
   end
 
