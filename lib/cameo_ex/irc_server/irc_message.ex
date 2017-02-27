@@ -13,7 +13,7 @@ defmodule CameoEx.IrcServer.IrcMessage do
   @type t :: %__MODULE__{
     prefix: binary | charlist | nil,
     command: binary,
-    params: [binary], []
+    params: [binary] | []
   }
 
   @spec parse_message(binary()) :: __MODULE__.t
