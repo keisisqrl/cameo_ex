@@ -101,6 +101,11 @@ defmodule CameoEx.IrcServer.ClientConnection do
       end
   end
 
+  def handle_message(%IrcMessage{command: "PASS"} = msg, socket, state) do
+    [pass| _] = msg.params
+    %__MODULE__{state| pass: pass}
+  end
+
   def handle_message(msg, socket, state) do
     reply = IrcMessage.build_server_msg("421", [msg.command, "Unknown command"])
     :gen_tcp.send(socket, IrcMessage.to_iolist(reply))
