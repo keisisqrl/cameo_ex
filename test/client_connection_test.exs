@@ -11,12 +11,20 @@ defmodule ClientConnectionTest do
     end
   end
 
+  defmacrop sent_server_msg(cmd,params) do
+    quote do
+      called :gen_tcp.send(nil,IrcMessage.to_iolist(
+        IrcMessage.build_server_msg(unquote(cmd),unquote(params))
+      ))
+    end
+  end
+
   setup_all do
     Application.ensure_started :cameo_ex
   end
 
   describe "handle NICK:" do
-    setup :nick_tests
+    setup [:msg_tests, :nick_tests]
 
     test "unregistered" do
       state = %ClientConnection{}
@@ -49,7 +57,7 @@ defmodule ClientConnectionTest do
   end
 
   describe "handle USER:" do
-    setup :user_tests
+    setup [:msg_tests, :user_tests]
 
     test "success", context do
       mock_tcp do
@@ -65,10 +73,8 @@ defmodule ClientConnectionTest do
       mock_tcp do
         new_state = ClientConnection.handle_message(context.msg,nil,state)
         assert new_state == state
-        assert called :gen_tcp.send(nil,IrcMessage.to_iolist(
-          IrcMessage.build_server_msg("462",
-            ["Unauthorized command (already registered)"])
-        ))
+        assert sent_server_msg("462",
+          ["Unauthorized command (already registered)"])
       end
     end
 
@@ -77,16 +83,14 @@ defmodule ClientConnectionTest do
       mock_tcp do
         new_state = ClientConnection.handle_message(msg, nil, context.state)
         assert new_state == context.state
-        assert called :gen_tcp.send(nil,IrcMessage.to_iolist(
-          IrcMessage.build_server_msg("461", ["USER", "Not enough parameters"])
-        ))
+        assert sent_server_msg("461",[msg.command,"Not enough parameters"])
       end
     end
   end
 
   describe "handle PASS:" do
-    setup :pass_tests
-    
+    setup [:msg_tests, :pass_tests]
+
     test "success", context do
       mock_tcp do
         new_state = ClientConnection.handle_message(context.msg, nil, context.state)
@@ -95,7 +99,20 @@ defmodule ClientConnectionTest do
     end
   end
 
-  defp nick_tests(_context) do
+  describe "handle INVALID:" do
+    setup :msg_tests
+
+    test "error", context do
+      mock_tcp do
+        msg = %{context.msg| command: "INVALID"}
+        new_state = ClientConnection.handle_message(msg, nil, context.state)
+        assert new_state == context.state
+        assert sent_server_msg("421",[msg.command,"Unknown command"])
+      end
+    end
+  end
+
+  defp msg_tests(_context) do
     [
       state: %ClientConnection{
         nick: "oldnick",
@@ -103,20 +120,27 @@ defmodule ClientConnectionTest do
         host: "host",
         name: "real name"
       },
-      newnick: "newnick",
-      msg: %IrcMessage{
+      msg: %IrcMessage{}
+    ]
+  end
+
+  defp nick_tests(context) do
+    newnick = "newnick"
+    [
+      newnick: newnick,
+      msg: %{context.msg|
         command: "NICK",
-        params: ["newnick"]
+        params: [newnick]
       }
     ]
   end
 
-  defp user_tests(_context) do
+  defp user_tests(context) do
     newuser = "newuser"
     realname = "Real Name"
     [
       state: %ClientConnection{},
-      msg: %IrcMessage{
+      msg: %IrcMessage{context.msg|
         command: "USER",
         params: [newuser, "*", "*", realname]
       },
@@ -125,11 +149,14 @@ defmodule ClientConnectionTest do
     ]
   end
 
-  defp pass_tests(_context) do
+  defp pass_tests(context) do
     pass = "pass"
     [
       state: %ClientConnection{},
-      msg: %IrcMessage{command: "PASS", params: [pass]},
+      msg: %{context.msg|
+        command: "PASS",
+        params: [pass]
+      },
       pass: pass
     ]
   end
